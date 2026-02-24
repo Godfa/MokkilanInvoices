@@ -1,6 +1,7 @@
 using API.Controllers;
 using API.DTOs;
 using API.Services;
+using Application.Interfaces;
 using Domain;
 using FluentAssertions;
 using Microsoft.AspNetCore.Identity;

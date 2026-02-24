@@ -20,10 +20,10 @@ namespace API.Extensions
         public static IServiceCollection AddApplicationServices(this IServiceCollection services,
             IConfiguration config)
         {
-             services.AddSwaggerGen(c =>
-            {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "WebAPIv5", Version = "v1" });
-            });
+            services.AddSwaggerGen(c =>
+           {
+               c.SwaggerDoc("v1", new OpenApiInfo { Title = "WebAPIv5", Version = "v1" });
+           });
             services.AddDbContext<DataContext>(opt =>
             {
                 var connectionString = config.GetConnectionString("DefaultConnection");
@@ -43,7 +43,7 @@ namespace API.Extensions
                 opt.AddPolicy("CorsPolicy", policy =>
                 {
                     var allowedOrigins = new List<string>();
-                    
+
                     var configOrigins = config.GetSection("AllowedOrigins").Get<string[]>();
                     if (configOrigins != null) allowedOrigins.AddRange(configOrigins);
 
@@ -72,6 +72,7 @@ namespace API.Extensions
             services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<IPdfService, PdfService>();
             services.AddHttpClient<IReceiptScannerService, ReceiptScannerService>();
+            services.AddHostedService<InvoiceReminderBackgroundService>();
 
             return services;
         }

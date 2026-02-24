@@ -1,8 +1,10 @@
 using API.Controllers;
 using API.DTOs;
 using API.Services;
+using Application.Interfaces;
 using Domain;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -22,6 +24,7 @@ namespace API.UnitTests.Controllers
         private readonly DataContext _context;
         private readonly Mock<IHostEnvironment> _environmentMock;
         private readonly Mock<IEmailService> _emailServiceMock;
+        private readonly Mock<ILogger<AdminController>> _loggerMock;
         private readonly AdminController _controller;
 
         public AdminControllerTests()
@@ -44,13 +47,15 @@ namespace API.UnitTests.Controllers
 
             _environmentMock = new Mock<IHostEnvironment>();
             _emailServiceMock = new Mock<IEmailService>();
+            _loggerMock = new Mock<ILogger<AdminController>>();
 
             _controller = new AdminController(
                 _userManagerMock.Object,
                 _roleManagerMock.Object,
                 _context,
                 _environmentMock.Object,
-                _emailServiceMock.Object);
+                _emailServiceMock.Object,
+                _loggerMock.Object);
         }
 
         [Fact]
@@ -65,7 +70,7 @@ namespace API.UnitTests.Controllers
 
             // Assert
             password.Should().NotBeNullOrEmpty();
-            password.Length.Should().Be(12);
+            password.Length.Should().Be(6);
         }
 
         [Fact]
@@ -191,7 +196,7 @@ namespace API.UnitTests.Controllers
             _userManagerMock.Setup(x => x.ResetPasswordAsync(user, "reset-token", It.IsAny<string>()))
                 .ReturnsAsync(IdentityResult.Success);
             _userManagerMock.Setup(x => x.UpdateAsync(user)).ReturnsAsync(IdentityResult.Success);
-            _emailServiceMock.Setup(x => x.SendPasswordResetEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+            _emailServiceMock.Setup(x => x.SendPasswordResetEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
                 .ReturnsAsync(true);
 
             // Act
@@ -217,7 +222,7 @@ namespace API.UnitTests.Controllers
             _userManagerMock.Setup(x => x.ResetPasswordAsync(user, "reset-token", It.IsAny<string>()))
                 .ReturnsAsync(IdentityResult.Success);
             _userManagerMock.Setup(x => x.UpdateAsync(user)).ReturnsAsync(IdentityResult.Success);
-            _emailServiceMock.Setup(x => x.SendPasswordResetEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+            _emailServiceMock.Setup(x => x.SendPasswordResetEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
                 .ReturnsAsync(true);
 
             // Act
@@ -228,7 +233,8 @@ namespace API.UnitTests.Controllers
                 x => x.SendPasswordResetEmailAsync(
                     "test@example.com",
                     "Test User",
-                    It.Is<string>(pwd => pwd.Length == 12)), // Verify password has correct length
+                    It.IsAny<string>(),
+                    It.Is<string>(pwd => pwd.Length == 6)), // Verify password has correct length
                 Times.Once);
         }
 
@@ -247,7 +253,7 @@ namespace API.UnitTests.Controllers
             _userManagerMock.Setup(x => x.ResetPasswordAsync(user, "reset-token", It.IsAny<string>()))
                 .ReturnsAsync(IdentityResult.Success);
             _userManagerMock.Setup(x => x.UpdateAsync(user)).ReturnsAsync(IdentityResult.Success);
-            _emailServiceMock.Setup(x => x.SendPasswordResetEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+            _emailServiceMock.Setup(x => x.SendPasswordResetEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
                 .ReturnsAsync(true);
 
             // Act
@@ -276,7 +282,7 @@ namespace API.UnitTests.Controllers
             _userManagerMock.Setup(x => x.ResetPasswordAsync(user, "reset-token", It.IsAny<string>()))
                 .ReturnsAsync(IdentityResult.Success);
             _userManagerMock.Setup(x => x.UpdateAsync(user)).ReturnsAsync(IdentityResult.Success);
-            _emailServiceMock.Setup(x => x.SendPasswordResetEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+            _emailServiceMock.Setup(x => x.SendPasswordResetEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
                 .ReturnsAsync(false);
 
             // Act

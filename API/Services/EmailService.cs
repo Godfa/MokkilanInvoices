@@ -235,6 +235,48 @@ Mökkilan Invoices
             return await SendEmailWithAttachmentsAsync(email, displayName, subject, plainTextContent, htmlContent, attachments);
         }
 
+        public async Task<bool> SendInvoiceReminderEmailAsync(string email, string displayName, string invoiceTitle, string invoiceUrl)
+        {
+            var subject = $"Muistutus: Lasku odottaa hyväksyntääsi: {invoiceTitle} - Mökkilan Invoices";
+            var htmlContent = $@"
+                <h2>Lasku odottaa yhä hyväksyntääsi</h2>
+                <p>Hei {displayName},</p>
+                <p>Tämä on muistutus, että lasku <strong>{invoiceTitle}</strong> odottaa edelleen tarkistustasi ja hyväksyntääsi.</p>
+                <p>Ole hyvä ja:</p>
+                <ul>
+                    <li>Lisää omat kulusi laskulle</li>
+                    <li>Tarkista, että kaikki kulut ovat oikein</li>
+                    <li>Hyväksy lasku kun olet tyytyväinen</li>
+                </ul>
+                <p><a href=""{invoiceUrl}"" style=""display: inline-block; padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px;"">Avaa lasku</a></p>
+                <p>Tai kopioi linkki selaimeesi:</p>
+                <p>{invoiceUrl}</p>
+                <br>
+                <p>Terveisin,<br>Mökkilan Invoices</p>
+            ";
+
+            var plainTextContent = $@"
+Lasku odottaa yhä hyväksyntääsi
+
+Hei {displayName},
+
+Tämä on muistutus, että lasku {invoiceTitle} odottaa edelleen tarkistustasi ja hyväksyntääsi.
+
+Ole hyvä ja:
+- Lisää omat kulusi laskulle
+- Tarkista, että kaikki kulut ovat oikein
+- Hyväksy lasku kun olet tyytyväinen
+
+
+{invoiceUrl}
+
+Terveisin,
+Mökkilan Invoices
+            ";
+
+            return await SendEmailAsync(email, displayName, subject, plainTextContent, htmlContent);
+        }
+
         private async Task<bool> SendEmailAsync(string toEmail, string toName, string subject, string plainTextContent, string htmlContent)
         {
             if (string.IsNullOrEmpty(_smtpHost))

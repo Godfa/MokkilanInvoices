@@ -124,6 +124,7 @@ namespace API.UnitTests.Services
             var result = await service.SendPasswordResetEmailAsync(
                 "test@example.com",
                 "Test User",
+                "testuser",
                 "NewTempPass123!");
 
             // Assert
@@ -150,6 +151,7 @@ namespace API.UnitTests.Services
             var result = await service.SendPasswordResetEmailAsync(
                 "test@example.com",
                 "Test User",
+                "testuser",
                 "NewTempPass123!");
 
             // Assert

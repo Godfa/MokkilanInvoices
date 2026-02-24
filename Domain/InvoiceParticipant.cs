@@ -12,5 +12,7 @@ namespace Domain
 
         public string AppUserId { get; set; }
         public User AppUser { get; set; }
+
+        public DateTime? LastReminderSentAt { get; set; }
     }
 }

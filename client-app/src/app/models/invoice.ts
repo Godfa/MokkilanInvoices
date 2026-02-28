@@ -49,6 +49,8 @@ export interface InvoiceParticipant {
     invoiceId: string;
     appUserId: string;
     appUser: AppUser;
+    hasPaid?: boolean;
+    paidAt?: string;
 }
 
 export interface InvoiceApproval {

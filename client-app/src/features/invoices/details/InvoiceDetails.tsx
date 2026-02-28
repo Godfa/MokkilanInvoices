@@ -10,7 +10,7 @@ import { InvoiceStatus } from "../../../app/models/invoice";
 
 export default observer(function InvoiceDetails() {
     const { invoiceStore, userStore } = useStore();
-    const { selectedInvoice: invoice, loadInvoice, loadingInitial, changeInvoiceStatus, loading, approveInvoice, unapproveInvoice } = invoiceStore;
+    const { selectedInvoice: invoice, loadInvoice, loadingInitial, changeInvoiceStatus, loading, approveInvoice, unapproveInvoice, togglePaymentStatus } = invoiceStore;
     const { user } = userStore;
     const { id } = useParams<{ id: string }>();
     const location = useLocation();
@@ -56,6 +56,10 @@ export default observer(function InvoiceDetails() {
     const isParticipant = invoice.participants?.some(p => p.appUserId === user?.id) || false;
     const canInteractWithApproval = invoice.status === InvoiceStatus.Aktiivinen && (isParticipant || isAdmin);
 
+    const participantDetails = invoice.participants?.find(p => p.appUserId === user?.id);
+    const hasPaid = participantDetails?.hasPaid || false;
+    const canInteractWithPayment = invoice.status === InvoiceStatus.Maksussa && (isParticipant || isAdmin);
+
     const handleToggleApproval = async () => {
         if (user?.id && invoice.id) {
             if (hasApproved) {
@@ -65,6 +69,12 @@ export default observer(function InvoiceDetails() {
                 // Check if this might be the last approval and trigger notifications
                 await invoiceStore.sendPaymentNotifications(invoice.id);
             }
+        }
+    };
+
+    const handleTogglePayment = async () => {
+        if (user?.id && invoice.id) {
+            await togglePaymentStatus(invoice.id, user.id);
         }
     };
 
@@ -159,6 +169,17 @@ export default observer(function InvoiceDetails() {
                     >
                         <Icon name={hasApproved ? "times" : "check"} />
                         {hasApproved ? "Peru hyväksyntä" : "Hyväksy lasku"}
+                    </Button>
+                )}
+                {canInteractWithPayment && (
+                    <Button
+                        className={hasPaid ? "btn-secondary" : "btn-success"}
+                        onClick={handleTogglePayment}
+                        loading={loading}
+                        disabled={loading}
+                    >
+                        <Icon name={hasPaid ? "undo" : "money bill alternate"} />
+                        {hasPaid ? "Peru maksumerkintä" : "Merkitse maksetuksi"}
                     </Button>
                 )}
                 <Button

@@ -14,5 +14,8 @@ namespace Domain
         public User AppUser { get; set; }
 
         public DateTime? LastReminderSentAt { get; set; }
+
+        public bool HasPaid { get; set; }
+        public DateTime? PaidAt { get; set; }
     }
 }

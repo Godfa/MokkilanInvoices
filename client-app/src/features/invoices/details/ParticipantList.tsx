@@ -13,7 +13,7 @@ interface Props {
 
 export default observer(function ParticipantList({ invoiceId }: Props) {
     const { invoiceStore, userStore } = useStore();
-    const { selectedInvoice, addParticipant, removeParticipant, loadUsers, PotentialParticipants, loading, addUsualSuspects, approveInvoice, unapproveInvoice } = invoiceStore;
+    const { selectedInvoice, addParticipant, removeParticipant, loadUsers, PotentialParticipants, loading, addUsualSuspects, approveInvoice, unapproveInvoice, togglePaymentStatus } = invoiceStore;
     const { user } = userStore;
 
     useEffect(() => {
@@ -171,8 +171,14 @@ export default observer(function ParticipantList({ invoiceId }: Props) {
                     {participants.length > 0 ? (
                         participants.map(p => {
                             const hasApproved = selectedInvoice.approvals?.some(a => a.appUserId === p.appUserId) || false;
+                            const hasPaid = p.hasPaid || false;
                             const isCurrentUser = user?.id === p.appUserId;
+
+                            // Approval interaction only in Aktiivinen phase
                             const canInteractWithApproval = selectedInvoice.status === InvoiceStatus.Aktiivinen && (isCurrentUser || isAdmin);
+
+                            // Payment interaction only in Maksussa phase
+                            const canInteractWithPayment = selectedInvoice.status === InvoiceStatus.Maksussa && (isCurrentUser || isAdmin);
 
                             const handleToggleApproval = async () => {
                                 if (hasApproved) {
@@ -184,9 +190,13 @@ export default observer(function ParticipantList({ invoiceId }: Props) {
                                 }
                             };
 
+                            const handleTogglePayment = async () => {
+                                await togglePaymentStatus(invoiceId, p.appUserId);
+                            };
+
                             return (
                                 <div key={p.appUserId} className="participant-card" style={{ position: 'relative' }}>
-                                    {hasApproved && (
+                                    {selectedInvoice.status === InvoiceStatus.Aktiivinen && hasApproved && (
                                         <Icon
                                             name='check circle'
                                             style={{
@@ -199,10 +209,24 @@ export default observer(function ParticipantList({ invoiceId }: Props) {
                                             title="Hyväksytty"
                                         />
                                     )}
+                                    {selectedInvoice.status === InvoiceStatus.Maksussa && hasPaid && (
+                                        <Icon
+                                            name='money bill alternate'
+                                            style={{
+                                                position: 'absolute',
+                                                top: '8px',
+                                                right: '8px',
+                                                color: '#21ba45',
+                                                fontSize: '1.2em'
+                                            }}
+                                            title={`Maksettu ${p.paidAt ? new Date(p.paidAt).toLocaleDateString() : ''}`}
+                                        />
+                                    )}
                                     <div className="participant-avatar">
                                         {getInitials(p.appUser.displayName)}
                                     </div>
                                     <span className="participant-name">{p.appUser.displayName}</span>
+
                                     {canInteractWithApproval && (
                                         <Button
                                             size='mini'
@@ -216,12 +240,28 @@ export default observer(function ParticipantList({ invoiceId }: Props) {
                                             {hasApproved ? 'Peru' : 'Hyväksy'}
                                         </Button>
                                     )}
+
+                                    {canInteractWithPayment && (
+                                        <Button
+                                            size='mini'
+                                            className={hasPaid ? 'btn-secondary' : 'btn-success'}
+                                            onClick={handleTogglePayment}
+                                            loading={loading}
+                                            disabled={loading}
+                                            style={{ marginLeft: 'auto' }}
+                                            title={hasPaid ? "Peru maksumerkintä" : "Merkitse maksetuksi"}
+                                        >
+                                            <Icon name={hasPaid ? 'undo' : 'money bill alternate'} />
+                                            {hasPaid ? 'Peru' : 'Maksettu'}
+                                        </Button>
+                                    )}
+
                                     <Button
                                         size='mini'
                                         icon='print'
                                         as={Link}
                                         to={`/invoices/${invoiceId}/print/${p.appUserId}`}
-                                        style={{ marginLeft: canInteractWithApproval ? '0' : 'auto', padding: '4px', background: 'transparent', color: 'var(--text-muted)' }}
+                                        style={{ marginLeft: (canInteractWithApproval || canInteractWithPayment) ? '0' : 'auto', padding: '4px', background: 'transparent', color: 'var(--text-muted)' }}
                                         title="Tulosta osuus"
                                     />
                                     <Button

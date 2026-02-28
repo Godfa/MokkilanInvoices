@@ -147,7 +147,6 @@ export default observer(function ExpenseItemForm({ invoiceId, closeForm, expense
             <Header content={expenseItem ? 'Edit Expense Item' : 'Add Expense Item'} sub color='teal' />
             <Formik
                 initialValues={initialValues}
-                context={{ addLineItem }}
                 onSubmit={async (values) => {
                     const expenseItemId = expenseItem ? expenseItem.id : uuid();
 

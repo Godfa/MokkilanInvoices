@@ -8,7 +8,7 @@ import { InvoiceStatus } from "../../../app/models/invoice";
 
 export default observer(function InvoiceList() {
     const { invoiceStore, userStore } = useStore();
-    const { deleteInvoice, Invoices, loading, approveInvoice, unapproveInvoice } = invoiceStore;
+    const { deleteInvoice, Invoices, loading, approveInvoice, unapproveInvoice, togglePaymentStatus } = invoiceStore;
     const { user } = userStore;
     const navigate = useNavigate();
 
@@ -77,6 +77,10 @@ export default observer(function InvoiceList() {
                 const isAdmin = user?.roles?.includes('Admin') || false;
                 const canInteractWithApproval = invoice.status === InvoiceStatus.Aktiivinen && (isParticipant || isAdmin);
 
+                const participantDetails = invoice.participants?.find(p => p.appUserId === user?.id);
+                const hasPaid = participantDetails?.hasPaid || false;
+                const canInteractWithPayment = invoice.status === InvoiceStatus.Maksussa && (isParticipant || isAdmin);
+
                 const approvalCount = invoice.approvals?.length || 0;
                 const participantCount = invoice.participants?.length || 0;
                 const allApproved = participantCount > 0 && approvalCount === participantCount;
@@ -89,6 +93,14 @@ export default observer(function InvoiceList() {
                         } else {
                             approveInvoice(invoice.id, user.id);
                         }
+                    }
+                };
+
+                const handleTogglePayment = (e: React.MouseEvent) => {
+                    e.stopPropagation();
+                    if (user?.id) {
+                        setTarget(`pay-${invoice.id}`);
+                        togglePaymentStatus(invoice.id, user.id);
                     }
                 };
 
@@ -110,8 +122,11 @@ export default observer(function InvoiceList() {
                                     <Label color={getStatusColor(invoice.status)} size="small">
                                         {getStatusLabel(invoice.status)}
                                     </Label>
-                                    {hasApproved && (
+                                    {hasApproved && invoice.status === InvoiceStatus.Aktiivinen && (
                                         <Icon name="check circle" style={{ color: '#21ba45' }} title="Olet hyväksynyt" />
+                                    )}
+                                    {hasPaid && invoice.status === InvoiceStatus.Maksussa && (
+                                        <Icon name="money bill alternate" style={{ color: '#21ba45' }} title="Olet maksanut" />
                                     )}
                                     {participantCount > 0 && (
                                         <Label size="small" style={{ backgroundColor: allApproved ? '#21ba45' : '#767676', color: 'white' }}>
@@ -137,7 +152,7 @@ export default observer(function InvoiceList() {
                         <div className="invoice-card-actions" onClick={(e) => e.stopPropagation()}>
                             {canInteractWithApproval && (
                                 <Button
-                                    onClick={handleToggleApproval}
+                                    onClick={(e) => { e.stopPropagation(); handleToggleApproval(); }}
                                     className={hasApproved ? "btn-secondary" : "btn-success"}
                                     size="small"
                                     loading={loading && target === `approve-${invoice.id}`}
@@ -145,6 +160,18 @@ export default observer(function InvoiceList() {
                                 >
                                     <Icon name={hasApproved ? "times" : "check"} />
                                     {hasApproved ? "Peru hyväksyntä" : "Hyväksy lasku"}
+                                </Button>
+                            )}
+                            {canInteractWithPayment && (
+                                <Button
+                                    onClick={handleTogglePayment}
+                                    className={hasPaid ? "btn-secondary" : "btn-success"}
+                                    size="small"
+                                    loading={loading && target === `pay-${invoice.id}`}
+                                    disabled={loading}
+                                >
+                                    <Icon name={hasPaid ? "undo" : "money bill alternate"} />
+                                    {hasPaid ? "Peru maksumerkintä" : "Merkitse maksetuksi"}
                                 </Button>
                             )}
                             <Button

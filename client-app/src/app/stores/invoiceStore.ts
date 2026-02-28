@@ -349,6 +349,32 @@ export default class InvoiceStore {
         }
     }
 
+    togglePaymentStatus = async (invoiceId: string, userId: string) => {
+        this.loading = true;
+        try {
+            await agent.Invoices.togglePaymentStatus(invoiceId, userId);
+
+            // Reload the invoice to get the updated hasPaid / paidAt properties
+            // To ensure we get fresh data instead of just modifying locally
+            const updatedInvoice = await agent.Invoices.details(invoiceId);
+            runInAction(() => {
+                this.invoiceRegistry.set(invoiceId, updatedInvoice);
+                if (this.selectedInvoice?.id === invoiceId) {
+                    this.selectedInvoice = updatedInvoice;
+                }
+                this.loading = false;
+            });
+            toast.success('Maksutilan muutos tallennettu');
+        } catch (error: any) {
+            console.log(error);
+            const errorMessage = error?.response?.data || 'Tilan muuttaminen epäonnistui';
+            toast.error(errorMessage);
+            runInAction(() => {
+                this.loading = false;
+            });
+        }
+    }
+
     updateExpenseItem = async (invoiceId: string, expenseItem: ExpenseItem) => {
         this.loading = true;
         try {

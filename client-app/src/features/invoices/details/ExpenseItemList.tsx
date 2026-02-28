@@ -119,7 +119,7 @@ export default observer(function ExpenseItemList({ invoiceId }: Props) {
                                     <Table.Cell>{getExpenseTypeName(item.expenseType)}</Table.Cell>
                                     <Table.Cell>{item.organizer?.displayName || getUserName(item.organizerId)}</Table.Cell>
                                     <Table.Cell>{(item.lineItems?.reduce((sum, li) => sum + li.quantity * li.unitPrice, 0) ?? 0).toFixed(2)} €</Table.Cell>
-                                    <Table.Cell onClick={(e) => e.stopPropagation()}>
+                                    <Table.Cell onClick={(e: React.MouseEvent) => e.stopPropagation()}>
                                         <div style={{ marginBottom: '5px' }}>
                                             {item.payers && item.payers.length > 0 ? (
                                                 item.payers.map(p => (
@@ -231,7 +231,7 @@ export default observer(function ExpenseItemList({ invoiceId }: Props) {
                                             </div>
                                         )}
                                     </Table.Cell>
-                                    <Table.Cell onClick={(e) => e.stopPropagation()}>
+                                    <Table.Cell onClick={(e: React.MouseEvent) => e.stopPropagation()}>
                                         <Button
                                             onClick={() => handleEdit(item)}
                                             color='blue'

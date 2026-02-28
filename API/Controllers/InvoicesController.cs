@@ -9,7 +9,7 @@ namespace API.Controllers
     [Authorize]
     public class InvoicesController : BaseApiController
     {
-        
+
 
         [HttpGet]
         public async Task<ActionResult<List<Invoice>>> GetInvoices()
@@ -17,31 +17,31 @@ namespace API.Controllers
             return await Mediator.Send(new List.Query());
         }
 
-        
+
         [HttpGet("{Id}")]
         public async Task<ActionResult<Invoice>> GetInvoice(Guid id)
         {
-            return await Mediator.Send(new Details.Query{Id = id});
+            return await Mediator.Send(new Details.Query { Id = id });
         }
 
         [HttpPost]
         public async Task<IActionResult> CreateInvoice(Invoice invoice)
         {
-            return Ok(await Mediator.Send(new Create.Command {Invoice = invoice}));
+            return Ok(await Mediator.Send(new Create.Command { Invoice = invoice }));
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> EditInvoice(Guid id, Invoice invoice)
         {
             invoice.Id = id;
-            return Ok(await Mediator.Send(new Edit.Command{Invoice = invoice}));
+            return Ok(await Mediator.Send(new Edit.Command { Invoice = invoice }));
         }
 
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteInvoice(Guid id)
         {
-            return Ok(await Mediator.Send(new Delete.Command{Id = id}));
+            return Ok(await Mediator.Send(new Delete.Command { Id = id }));
         }
 
         [HttpPost("{invoiceId}/participants/{userId}")]
@@ -102,6 +102,22 @@ namespace API.Controllers
         public async Task<IActionResult> SendPaymentNotifications(Guid invoiceId)
         {
             await Mediator.Send(new SendPaymentNotifications.Command { InvoiceId = invoiceId });
+            return Ok();
+        }
+
+        [HttpPost("{invoiceId}/participants/{userId}/toggle-payment")]
+        public async Task<IActionResult> TogglePaymentStatus(Guid invoiceId, string userId)
+        {
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var isAdmin = User.IsInRole("Admin");
+
+            await Mediator.Send(new TogglePaymentStatus.Command
+            {
+                InvoiceId = invoiceId,
+                AppUserId = userId,
+                CurrentUserId = currentUserId,
+                IsAdmin = isAdmin
+            });
             return Ok();
         }
     }

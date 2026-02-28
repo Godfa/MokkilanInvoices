@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import InvoiceStore from './invoiceStore'
 import agent from '../api/agent'
-import { Invoice, ExpenseItem, ExpenseLineItem } from 'Invoices'
+import { Invoice, ExpenseItem, ExpenseLineItem, InvoiceStatus } from '../models/invoice'
 
 // Mock the agent
 vi.mock('../api/agent', () => ({
@@ -37,7 +37,7 @@ describe('InvoiceStore - Line Items', () => {
       lanNumber: 1,
       title: 'Test Invoice',
       description: 'Test',
-      image: null,
+      image: '',
       amount: 0,
       expenseItems: [
         {
@@ -52,6 +52,8 @@ describe('InvoiceStore - Line Items', () => {
         },
       ],
       participants: [],
+      status: InvoiceStatus.Aktiivinen,
+      approvals: [],
     }
 
     store.invoiceRegistry.set(invoiceId, invoice)

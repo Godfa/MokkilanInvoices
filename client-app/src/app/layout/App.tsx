@@ -4,20 +4,24 @@ import { useStore } from '../stores/store';
 import { observer } from 'mobx-react-lite';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
+import LoadingComponent from './LoadingComponent';
 
 function App() {
   const { userStore } = useStore();
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [appLoaded, setAppLoaded] = useState(false);
 
   useEffect(() => {
     if (userStore.user) {
-      // User already logged in
+      setAppLoaded(true);
     } else {
       const token = window.localStorage.getItem('jwt');
       if (token) {
-        userStore.getUser();
+        userStore.getUser().finally(() => setAppLoaded(true));
+      } else {
+        setAppLoaded(true);
       }
     }
   }, [userStore])
@@ -37,6 +41,8 @@ function App() {
   const authPages = ['/login', '/forgot-password', '/reset-password'];
   const isAuthPage = authPages.some(page => location.pathname.startsWith(page));
   const showSidebar = userStore.isLoggedIn && !isAuthPage;
+
+  if (!appLoaded) return <LoadingComponent content='Ladataan sovellusta...' />
 
   return (
     <div className="app-layout">

@@ -20,7 +20,10 @@ export default class UserStore {
                 this.user = user;
             });
             window.localStorage.setItem('jwt', user.token);
-            router.navigate('/invoices');
+            const state = router.state.location.state as any;
+            const from = state?.from?.pathname || '/invoices';
+            const search = state?.from?.search || '';
+            router.navigate(from + search);
         } catch (error) {
             throw error;
         }

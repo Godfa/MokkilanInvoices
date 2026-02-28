@@ -14,25 +14,32 @@ import InvoicePrintView from "../../features/invoices/details/InvoicePrintView";
 import ParticipantInvoicePrintView from "../../features/invoices/details/ParticipantInvoicePrintView";
 import ReceiptScanner from "../../features/receipts/ReceiptScanner";
 
+import RequireAuth from "./RequireAuth";
+
 export const routes: RouteObject[] = [
     {
         path: '/',
         element: <App />,
         children: [
+            {
+                element: <RequireAuth />,
+                children: [
+                    { path: 'invoices', element: <InvoiceDashboard /> },
+                    { path: 'invoices/:id', element: <InvoiceDetails /> },
+                    { path: 'invoices/:id/print', element: <InvoicePrintView /> },
+                    { path: 'invoices/:id/print/:participantId', element: <ParticipantInvoicePrintView /> },
+                    { path: 'createInvoice', element: <InvoiceForm key='create' /> },
+                    { path: 'manage/:id', element: <InvoiceForm key='manage' /> },
+                    { path: 'profile', element: <ProfilePage /> },
+                    { path: 'changePassword', element: <ChangePasswordForm /> },
+                    { path: 'admin', element: <AdminPage /> },
+                    { path: 'scan-receipt', element: <ReceiptScanner /> },
+                ]
+            },
             { index: true, element: <Navigate replace to='/login' /> },
-            { path: 'invoices', element: <InvoiceDashboard /> },
-            { path: 'invoices/:id', element: <InvoiceDetails /> },
-            { path: 'invoices/:id/print', element: <InvoicePrintView /> },
-            { path: 'invoices/:id/print/:participantId', element: <ParticipantInvoicePrintView /> },
-            { path: 'createInvoice', element: <InvoiceForm key='create' /> },
-            { path: 'manage/:id', element: <InvoiceForm key='manage' /> },
             { path: 'login', element: <LoginForm /> },
-            { path: 'profile', element: <ProfilePage /> },
-            { path: 'changePassword', element: <ChangePasswordForm /> },
             { path: 'forgot-password', element: <ForgotPasswordForm /> },
             { path: 'reset-password', element: <ResetPasswordForm /> },
-            { path: 'admin', element: <AdminPage /> },
-            { path: 'scan-receipt', element: <ReceiptScanner /> },
             { path: '*', element: <Navigate replace to='/invoices' /> },
         ]
     }
